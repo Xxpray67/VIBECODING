@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyCamp: Курс Python в браузере</title>
+    <!-- Подсветка синтаксиса Prism.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        :root {
+            --bg-main: #1e1e1e;
+            --bg-sidebar: #252526;
+            --text-main: #d4d4d4;
+            --text-muted: #858585;
+            --accent: #007acc;
+            --border: #333333;
+            --console-bg: #000000;
+            --console-text: #00ff00;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        #sidebar h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            text-align: center;
+        }
+        #sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        #sidebar a {
+            text-decoration: none;
+            color: var(--text-muted);
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        #sidebar a:hover {
+            background-color: #333333;
+            color: var(--text-main);
+        }
+        #sidebar a.active {
+            background-color: var(--accent);
+            color: #ffffff;
+        }
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-main);
+        }
+        #editor-container {
+            flex-grow: 1;
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        #code-editor {
+            flex-grow: 1;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 1rem;
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            border: none;
+            outline: none;
+            resize: none;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+        }
+        #controls {
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #252526;
+            border-bottom: 1px solid var(--border);
+        }
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background-color: #005a99;
+        }
+        #console {
+            flex-grow: 1;
+            background-color: var(--console-bg);
+            color: var(--console-text);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            padding: 1rem;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .lesson-content {
+            display: none;
+            padding: 1rem;
+        }
+        .lesson-content.active {
+            display: block;
+        }
+        @media (max-width: 800px) {
+            #sidebar {
+                width: 200px;
+            }
+            #code-editor {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>PyCamp: Курс Python</h2>
+    <ul id="lesson-list"></ul>
+</div>
+
+<div id="main-content">
+    <div id="controls">
+        <span id="current-lesson-title"></span>
+        <button id="run-btn">▶ Запустить код</button>
+    </div>
+    <div id="editor-container">
+        <textarea id="code-editor" spellcheck="false"></textarea>
+    </div>
+    <div id="console">PyCamp Console v1.0
+Введите clear() для очистки консоли.
+Доступен объект 'data' для работы с данными.
+</div>
+</div>
+
+<!-- Подключение Prism.js для подсветки синтаксиса -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+<script>
+// --- БАЗА ДАННЫХ КУРСА ---
+const lessons = [
+    {
+        id: 0,
+        title: "0. Привет, мир!",
+        content: "Первая программа. Функция print() выводит текст в консоль.",
+        code: `print("Привет, PyCamp!")`
+    },
+    {
+        id: 1,
+        title: "1. Переменные и типы",
+        content: "Числа (int, float) и строки (str).",
+        code: `name = "Алексей"
+age = 30
+height = 1.85
+
+print("Имя:", name)
+print("Тип возраста:", type(age))`
+    },
+    {
+        id: 2,
+        title: "2. Арифметика",
+        content: "Матемические операции.",
+        code: `a = 10
+b = 3
+
+print("Сумма:", a + b)
+print("Разность:", a - b)
+print("Произведение:", a * b)
+print("Деление:", a / b)
+print("Целочисленное:", a // b)
+print("Остаток:", a % b)
+print("Степень:", a ** b)`
+    },
+    {
+        id: 3,
+        title: "3. Условные операторы",
+        content: "Принятие решений с помощью if, elif, else.",
+        code: `age = 20
+
+if age >= 18:
+    print("Доступ разрешен")
+else:
+    print("Доступ запрещен")`
+    },
+    {
+        id: 4,
+        title: "4. Цикл For",
+        content: "Перебор последовательностей.",
+        code: `fruits = ["яблоко", "банан", "вишня"]
+
+for fruit in fruits:
+    print(f"Я люблю {fruit}")`
+    },
+    {
+        id: 5,
+        title: "5. Цикл While",
+        content: "Цикл с условием.",
+        code: `count = 5
+while count > 0:
+    print(f"Осталось {count}")
+    count -= 1
+print("Пуск!")`
+    },
+    {
+        id: 6,
+        title: "6. Списки",
+        content: "Изменяемые коллекции данных.",
+        code: `numbers = [1, 2, 3]
+numbers.append(4)
+numbers.pop(0)
+print(numbers)
+print(len(numbers))`
+    },
+    {
+        id: 7,
+        title: "7. Словари",
+        content: "Коллекции в формате ключ-значение.",
+        code: `user = {"name": "Иван", "age": 25}
+print(user["name"])
+user["city"] = "Москва"
+print(user)`
+    },
+    {
+        id: 8,
+        title: "8. Функции",
+        content: "Переиспользование кода.",
+        code: `def greet(name):
+    return f"Привет, {name}!"
+
+print(greet("Мир"))
+print(greet("PyCamp"))`
+    },
+    {
+        id: 9,
+        title: "9. Работа с данными (финальный проект)",
+        content: "Используйте предзагруженный список словарей 'data'. Напишите код для анализа.",
+        code: `# Задача 1: Посчитать средний возраст
+# Задача 2: Вывести имена всех из Москвы
+# Задача 3: Найти самого молодого пользователя
+
+# Ваш код здесь:\nprint("Средний возраст:", sum(user['age'] for user in data) / len(data))\nprint("Из Москвы:", [user['name'] for user in data if user['city'] == 'Москва'])\nyoungest = min(data, key=lambda x: x['age'])\nprint("Самый молодой:", youngest['name'])`
+    }
+];
+
+// --- СОСТОЯНИЕ ПРИЛОЖЕНИЯ ---
+let currentLessonId = 0;
+const editor = document.getElementById('code-editor');
+const consoleOutput = document.getElementById('console');
+const runBtn = document.getElementById('run-btn');
+const lessonList = document.getElementById('lesson-list');
+const lessonTitle = document.getElementById('current-lesson-title');
+
+// --- ВИРТУАЛЬНАЯ СРЕДА PYTHON ---
+const PyInterpreter = {
+    variables: {},
+    
+    // Базовые встроенные функции
+    builtins: {
+        print: (...args) => {
+            consoleOutput.insertAdjacentText('beforeend', args.map(arg => String(arg)).join(' ') + '\n');
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        },
+        type: (obj) => {
+            if (obj === null) return 'NoneType';
+            const t = typeof obj;
+            if (t === 'number') return (Number.isInteger(obj)) ? 'int' : 'float';
+            return t;
+        },
+        len: (obj) => obj.length,
+        str: (obj) => String(obj),
+        int: (obj) => parseInt(obj),
+        float: (obj) => parseFloat(obj),
+        min: (arr) => Math.min(...arr),
+        max: (arr) => Math.max(...arr),
+        sum: (arr) => arr.reduce((a, b) => a + b, 0)
+    },
+
+    // Очистка консоли
+    clear: () => {
+        consoleOutput.textContent = 'PyCamp Console v1.0\nВведите clear() для очистки консоли.\nДоступен объект \'data\' для работы с данными.\n';
+    },
+
+    // Парсинг и выполнение
+    execute: (sourceCode) => {
+        // Подготовка окружения
+        const scope = { ...this.builtins, data: window.courseData, clear: this.clear };
+        
+        // Безопасный враппер для выполнения
+        try {
+            // Используем Function для создания изолированного контекста
+            const code = `
+// Автозамена print на console.log для перехвата
+(function() {
+    const scope = ${JSON.stringify(scope)};
+    const print = scope.print;
+    const data = scope.data;
+    const clear = scope.clear;
+    // Весь пользовательский код
+    ${sourceCode}
+})();
+`;
+            // eslint-disable-next-line no-eval
+            eval(code);
+        } catch (error) {
+            consoleOutput.insertAdjacentText('beforeend', 'Ошибка: ' + error.message + '\n');
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+    }
+};
+
+// --- ПРЕДЗАГРУЖЕННЫЕ ДАННЫЕ ДЛЯ ФИНАЛЬНОГО ПРОЕКТА ---
+window.courseData = [
+    { id: 1, name: "Алексей", age: 32, city: "Москва", active: true },
+    { id: 2, name: "Борис", age: 24, city: "Санкт-Петербург", active: false },
+    { id: 3, name: "Виктория", age: 29, city: "Москва", active: true },
+    { id: 4, name: "Дарья", age: 41, city: "Казань", active: true },
+    { id: 5, name: "Егор", age: 19, city: "Новосибирск", active: false }
+];
+
+// --- ОТРИСОВКА ИНТЕРФЕЙСА ---
+function renderLessons() {
+    lessons.forEach(lesson => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = lesson.title;
+        a.dataset.id = lesson.id;
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadLesson(parseInt(e.target.dataset.id));
+        });
+        li.appendChild(a);
+        lessonList.appendChild(li);
+    });
+}
+
+function loadLesson(id) {
+    currentLessonId = id;
+    const lesson = lessons[id];
+    editor.value = lesson.code;
+    lessonTitle.textContent = lesson.title;
+    
+    // Обновление навигации
+    document.querySelectorAll('#sidebar a').forEach(a => a.classList.remove('active'));
+    document.querySelector(`#sidebar a[data-id="${id}"]`).classList.add('active');
+    
+    // Очистка консоли при смене урока
+    PyInterpreter.clear();
+    
+    // Подсветка синтаксиса
+    Prism.highlightElement(editor);
+}
+
+// --- ОБРАБОТЧИКИ СОБЫТИЙ ---
+runBtn.addEventListener('click', () => {
+    PyInterpreter.clear();
+    const code = editor.value;
+    PyInterpreter.execute(code);
+});
+
+// --- ЗАПУСК ПРИЛОЖЕНИЯ ---
+renderLessons();
+loadLesson(0);
+</script>
+</body>
+</html>
