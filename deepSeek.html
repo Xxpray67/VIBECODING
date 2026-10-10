@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PythonCamp — интерактивный курс Python</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f7f9fc;
+      color: #1e293b;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Шапка */
+    .header {
+      background: #0b2b4a;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo span {
+      color: #ffd43b;
+      font-size: 2.2rem;
+    }
+
+    .progress-badge {
+      background: #1e3a5f;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .progress-bar {
+      width: 120px;
+      height: 8px;
+      background: #334e6e;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #ffd43b;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Основной макет */
+    .app-container {
+      display: flex;
+      flex: 1;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 1.5rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Сайдбар с уроками */
+    .sidebar {
+      flex: 0 0 280px;
+      background: white;
+      border-radius: 24px;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+      border: 1px solid #e9eef3;
+      height: fit-content;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1.2rem;
+      padding-left: 0.8rem;
+      color: #0b2b4a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .lesson-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .lesson-item {
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-left: 4px solid transparent;
+    }
+
+    .lesson-item:hover {
+      background: #f0f4fa;
+    }
+
+    .lesson-item.active {
+      background: #e8f0fe;
+      color: #0b2b4a;
+      font-weight: 600;
+      border-left-color: #ffd43b;
+    }
+
+    .lesson-item.completed .status-icon {
+      color: #22c55e;
+    }
+
+    .status-icon {
+      font-size: 1.1rem;
+      width: 20px;
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    /* Рабочая область */
+    .workspace {
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .lesson-panel {
+      background: white;
+      border-radius: 28px;
+      padding: 2rem;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.03);
+      border: 1px solid #e9eef3;
+    }
+
+    .lesson-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #0b2b4a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lesson-description {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #334155;
+      margin-bottom: 1.8rem;
+      background: #f8fafc;
+      padding: 1.4rem;
+      border-radius: 18px;
+      border-left: 6px solid #ffd43b;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .editor-header label {
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .run-btn {
+      background: #0b2b4a;
+      color: white;
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px rgba(11, 43, 74, 0.2);
+    }
+
+    .run-btn:hover {
+      background: #1e3a5f;
+      transform: translateY(-2px);
+    }
+
+    .run-btn:active {
+      transform: translateY(0);
+    }
+
+    .run-btn:disabled {
+      opacity: 0.6;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .code-editor {
+      width: 100%;
+      height: 240px;
+      padding: 1.2rem;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      resize: vertical;
+      outline: none;
+      transition: 0.2s;
+      tab-size: 4;
+    }
+
+    .code-editor:focus {
+      border-color: #ffd43b;
+      box-shadow: 0 0 0 3px rgba(255, 212, 59, 0.2);
+    }
+
+    .output-area {
+      margin-top: 1.5rem;
+      background: #f1f5f9;
+      border-radius: 18px;
+      padding: 1.2rem 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .output-header {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 0.6rem;
+      font-weight: 600;
+    }
+
+    .output-content {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 2.5rem;
+      color: #0f172a;
+    }
+
+    .success-message {
+      color: #15803d;
+      background: #dcfce7;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: 1px solid #bbf7d0;
+    }
+
+    .error-message {
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: 1px solid #fecaca;
+    }
+
+    .next-btn {
+      background: #ffd43b;
+      color: #0b2b4a;
+      border: none;
+      padding: 0.9rem 2.2rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 1.5rem;
+      box-shadow: 0 6px 14px rgba(255, 212, 59, 0.3);
+    }
+
+    .next-btn:hover {
+      background: #fcc419;
+      transform: translateY(-2px);
+    }
+
+    .next-btn:disabled {
+      opacity: 0.5;
+      transform: none;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Мобильная адаптация */
+    @media (max-width: 800px) {
+      .app-container {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .sidebar {
+        flex: auto;
+        width: 100%;
+        max-height: 250px;
+      }
+
+      .lesson-title {
+        font-size: 1.4rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .run-btn {
+        padding: 0.6rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка -->
+  <header class="header">
+    <div class="logo">
+      <span>🐍</span> PythonCamp
+    </div>
+    <div class="progress-badge">
+      <span>Прогресс:</span>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span id="progressText">0/8</span>
+    </div>
+  </header>
+
+  <!-- Основной контейнер -->
+  <div class="app-container">
+
+    <!-- Сайдбар с уроками -->
+    <aside class="sidebar">
+      <h3>📘 Уроки</h3>
+      <ul class="lesson-list" id="lessonList">
+        <!-- Генерируется через JS -->
+      </ul>
+    </aside>
+
+    <!-- Рабочая область -->
+    <main class="workspace">
+      <div class="lesson-panel">
+        <div class="lesson-title" id="lessonTitle">
+          <!-- Заголовок урока -->
+        </div>
+        <div class="lesson-description" id="lessonDescription">
+          <!-- Описание -->
+        </div>
+
+        <div class="editor-header">
+          <label>✏️ Редактор Python</label>
+          <button class="run-btn" id="runBtn">▶ Запустить</button>
+        </div>
+        <textarea id="codeEditor" class="code-editor" spellcheck="false"></textarea>
+
+        <div class="output-area">
+          <div class="output-header">📋 Вывод</div>
+          <div class="output-content" id="outputContent">Здесь появится результат...</div>
+        </div>
+
+        <div id="feedbackMessage"></div>
+
+        <button class="next-btn" id="nextBtn" disabled>Следующий урок →</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ==================== КУРС ПО PYTHON ====================
+    const lessons = [
+      {
+        id: 0,
+        title: "1. Привет, мир!",
+        description: "Напишите программу, которая выводит 'Привет, мир!' с помощью функции print().",
+        starterCode: "# Напишите код ниже\n",
+        solution: "print('Привет, мир!')",
+        check: (output) => output.trim() === "Привет, мир!",
+        hint: "Используйте print('Привет, мир!') — не забудьте кавычки."
+      },
+      {
+        id: 1,
+        title: "2. Переменные и типы",
+        description: "Создайте переменную name со значением 'Анна' и переменную age со значением 25. Выведите их через print().",
+        starterCode: "# Создайте переменные и выведите их\n",
+        solution: "name = 'Анна'\nage = 25\nprint(name)\nprint(age)",
+        check: (output) => {
+          const lines = output.trim().split('\n');
+          return lines.length >= 2 && lines[0].trim() === 'Анна' && lines[1].trim() === '25';
+        },
+        hint: "name = 'Анна', age = 25. Затем print(name) и print(age)."
+      },
+      {
+        id: 2,
+        title: "3. Арифметика",
+        description: "Вычислите и выведите сумму 15 + 27, результат умножения 8 * 9, и остаток от деления 50 на 7.",
+        starterCode: "# Выведите три результата\n",
+        solution: "print(15 + 27)\nprint(8 * 9)\nprint(50 % 7)",
+        check: (output) => {
+          const lines = output.trim().split('\n');
+          return lines[0] === '42' && lines[1] === '72' && lines[2] === '1';
+        },
+        hint: "Сложение +, умножение *, остаток %."
+      },
+      {
+        id: 3,
+        title: "4. Условные операторы",
+        description: "Напишите программу, которая проверяет число x = 10. Если x > 5, выведите 'Больше 5', иначе 'Меньше или равно 5'.",
+        starterCode: "x = 10\n# Ваш код\n",
+        solution: "x = 10\nif x > 5:\n    print('Больше 5')\nelse:\n    print('Меньше или равно 5')",
+        check: (output) => output.trim() === "Больше 5",
+        hint: "Используйте if x > 5: ... else: ..."
+      },
+      {
+        id: 4,
+        title: "5. Циклы for",
+        description: "Выведите числа от 1 до 5 включительно, каждое на новой строке, используя цикл for и range().",
+        starterCode: "# Цикл for\n",
+        solution: "for i in range(1, 6):\n    print(i)",
+        check: (output) => {
+          const lines = output.trim().split('\n');
+          return lines.length === 5 && lines[0] === '1' && lines[4] === '5';
+        },
+        hint: "range(1, 6) даст числа 1,2,3,4,5."
+      },
+      {
+        id: 5,
+        title: "6. Списки",
+        description: "Создайте список fruits = ['яблоко', 'банан', 'апельсин']. Выведите первый элемент и последний элемент.",
+        starterCode: "fruits = ['яблоко', 'банан', 'апельсин']\n# Выведите первый и последний\n",
+        solution: "fruits = ['яблоко', 'банан', 'апельсин']\nprint(fruits[0])\nprint(fruits[-1])",
+        check: (output) => {
+          const lines = output.trim().split('\n');
+          return lines[0] === 'яблоко' && lines[1] === 'апельсин';
+        },
+        hint: "Первый элемент — fruits[0], последний — fruits[-1]."
+      },
+      {
+        id: 6,
+        title: "7. Функции",
+        description: "Напишите функцию greet(name), которая возвращает строку 'Привет, {name}!'. Вызовите её с 'Мир' и выведите результат.",
+        starterCode: "# Определите функцию\n",
+        solution: "def greet(name):\n    return f'Привет, {name}!'\n\nprint(greet('Мир'))",
+        check: (output) => output.trim() === "Привет, Мир!",
+        hint: "def greet(name): return f'Привет, {name}!'"
+      },
+      {
+        id: 7,
+        title: "8. Словари",
+        description: "Создайте словарь person = {'имя': 'Иван', 'возраст': 30}. Выведите значение по ключу 'имя'.",
+        starterCode: "person = {'имя': 'Иван', 'возраст': 30}\n# Выведите имя\n",
+        solution: "person = {'имя': 'Иван', 'возраст': 30}\nprint(person['имя'])",
+        check: (output) => output.trim() === "Иван",
+        hint: "Обращение к значению: person['имя']"
+      }
+    ];
+
+    // ==================== СОСТОЯНИЕ ====================
+    let currentLessonIndex = 0;
+    let completedLessons = new Set(); // id завершённых уроков
+
+    // DOM элементы
+    const lessonListEl = document.getElementById('lessonList');
+    const lessonTitleEl = document.getElementById('lessonTitle');
+    const lessonDescriptionEl = document.getElementById('lessonDescription');
+    const codeEditorEl = document.getElementById('codeEditor');
+    const outputContentEl = document.getElementById('outputContent');
+    const feedbackMessageEl = document.getElementById('feedbackMessage');
+    const runBtn = document.getElementById('runBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+    function updateProgress() {
+      const total = lessons.length;
+      const done = completedLessons.size;
+      const percent = (done / total) * 100;
+      progressFill.style.width = percent + '%';
+      progressText.textContent = `${done}/${total}`;
+    }
+
+    function renderLessonList() {
+      lessonListEl.innerHTML = '';
+      lessons.forEach((lesson, idx) => {
+        const li = document.createElement('li');
+        li.className = `lesson-item ${idx === currentLessonIndex ? 'active' : ''} ${completedLessons.has(lesson.id) ? 'completed' : ''}`;
+        li.dataset.index = idx;
+        li.innerHTML = `
+          <span class="status-icon">${completedLessons.has(lesson.id) ? '✅' : '○'}</span>
+          <span>${lesson.title}</span>
+        `;
+        li.addEventListener('click', () => {
+          loadLesson(idx);
+        });
+        lessonListEl.appendChild(li);
+      });
+    }
+
+    function loadLesson(index) {
+      if (index < 0 || index >= lessons.length) return;
+      currentLessonIndex = index;
+      const lesson = lessons[index];
+
+      lessonTitleEl.textContent = lesson.title;
+      lessonDescriptionEl.textContent = lesson.description;
+
+      // Восстанавливаем сохранённый код или стартовый
+      const savedCode = localStorage.getItem(`pythoncamp_code_${lesson.id}`);
+      codeEditorEl.value = savedCode !== null ? savedCode : lesson.starterCode;
+
+      // Очищаем вывод и фидбек
+      outputContentEl.textContent = 'Здесь появится результат...';
+      feedbackMessageEl.innerHTML = '';
+
+      // Проверяем, пройден ли урок
+      const isCompleted = completedLessons.has(lesson.id);
+      nextBtn.disabled = !isCompleted;
+
+      // Если урок последний, меняем текст кнопки
+      if (index === lessons.length - 1) {
+        nextBtn.textContent = '🎉 Курс завершён!';
+        nextBtn.disabled = true; // последний урок, дальше некуда
+      } else {
+        nextBtn.textContent = 'Следующий урок →';
+      }
+
+      // Подсвечиваем активный пункт
+      renderLessonList();
+      updateProgress();
+    }
+
+    // Сохранение кода при вводе
+    codeEditorEl.addEventListener('input', () => {
+      const lesson = lessons[currentLessonIndex];
+      localStorage.setItem(`pythoncamp_code_${lesson.id}`, codeEditorEl.value);
+    });
+
+    // ==================== ЗАПУСК PYTHON ====================
+    async function runPythonCode(code) {
+      // Используем Pyodide для выполнения Python в браузере
+      if (!window.pyodide) {
+        outputContentEl.textContent = 'Загрузка Python (Pyodide)... Пожалуйста, подождите.';
+        try {
+          // Загружаем Pyodide с CDN
+          await loadPyodideScript();
+          window.pyodide = await loadPyodide({
+            indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
+          });
+        } catch (e) {
+          throw new Error('Не удалось загрузить Pyodide: ' + e.message);
+        }
+      }
+
+      // Перенаправляем stdout
+      let output = '';
+      window.pyodide.setStdout({
+        batched: (text) => {
+          output += text + '\n';
+        }
+      });
+
+      try {
+        // Выполняем код
+        await window.pyodide.runPythonAsync(code);
+      } catch (err) {
+        // Если ошибка в Python, показываем её
+        output += `Ошибка: ${err.message}`;
+      }
+
+      return output;
+    }
+
+    // Динамическая загрузка Pyodide
+    function loadPyodideScript() {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector('script[src*="pyodide"]')) {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Ошибка загрузки Pyodide'));
+        document.head.appendChild(script);
+      });
+    }
+
+    // Обработчик кнопки "Запустить"
+    runBtn.addEventListener('click', async () => {
+      const lesson = lessons[currentLessonIndex];
+      const code = codeEditorEl.value;
+
+      // Блокируем кнопку на время выполнения
+      runBtn.disabled = true;
+      runBtn.textContent = '⏳ Выполняется...';
+      feedbackMessageEl.innerHTML = '';
+      outputContentEl.textContent = 'Выполнение...';
+
+      try {
+        const output = await runPythonCode(code);
+        outputContentEl.textContent = output || '(пустой вывод)';
+
+        // Проверяем решение
+        const isCorrect = lesson.check(output);
+
+        if (isCorrect) {
+          // Отмечаем урок как пройденный
+          if (!completedLessons.has(lesson.id)) {
+            completedLessons.add(lesson.id);
+            localStorage.setItem('pythoncamp_completed', JSON.stringify([...completedLessons]));
+          }
+
+          feedbackMessageEl.innerHTML = `
+            <div class="success-message">
+              ✅ Отлично! Урок пройден. Вы можете перейти к следующему.
+            </div>
+          `;
+
+          // Активируем кнопку "Следующий урок", если не последний
+          if (currentLessonIndex < lessons.length - 1) {
+            nextBtn.disabled = false;
+          }
+
+          renderLessonList();
+          updateProgress();
+        } else {
+          feedbackMessageEl.innerHTML = `
+            <div class="error-message">
+              ❌ Результат не совпадает с ожидаемым. Попробуйте ещё раз.<br>
+              <small>Подсказка: ${lesson.hint}</small>
+            </div>
+          `;
+        }
+      } catch (err) {
+        outputContentEl.textContent = 'Ошибка выполнения: ' + err.message;
+        feedbackMessageEl.innerHTML = `
+          <div class="error-message">
+            ⚠️ Произошла ошибка при выполнении кода. Проверьте синтаксис.
+          </div>
+        `;
+      } finally {
+        runBtn.disabled = false;
+        runBtn.textContent = '▶ Запустить';
+      }
+    });
+
+    // Обработчик кнопки "Следующий урок"
+    nextBtn.addEventListener('click', () => {
+      if (currentLessonIndex < lessons.length - 1) {
+        loadLesson(currentLessonIndex + 1);
+      }
+    });
+
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+    function init() {
+      // Загружаем прогресс из localStorage
+      const saved = localStorage.getItem('pythoncamp_completed');
+      if (saved) {
+        try {
+          completedLessons = new Set(JSON.parse(saved));
+        } catch (e) {
+          completedLessons = new Set();
+        }
+      }
+
+      // Загружаем первый урок
+      loadLesson(0);
+      updateProgress();
+
+      // Предзагружаем Pyodide в фоне (не блокируя)
+      setTimeout(() => {
+        loadPyodideScript().catch(() => {});
+      }, 1000);
+    }
+
+    init();
+  </script>
+</body>
+</html>
